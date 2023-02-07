@@ -5,8 +5,20 @@ import './widgets/chart.dart';
 import './models/transaction.dart';
 import './widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+    [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ],
+  );
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -101,6 +113,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // ),
   ];
 
+  bool _showChart = false;
+
   List<Transaction> get _recentTransaction {
     return _userTransaction.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(
@@ -142,6 +156,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
+    bool isLandscape = mediaQuery.orientation == Orientation.landscape;
+
     final appBar = AppBar(
       title: const Text('Personal Expenses'),
       actions: [
@@ -151,41 +169,80 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ],
     );
+
+    final transactionList = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.75,
+      child: TransactionList(
+        transactions: _userTransaction,
+        deleteTx: _deleteTransaction,
+      ),
+    );
+
     return Scaffold(
       appBar: appBar,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-                height: (MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height -
-                        MediaQuery.of(context).padding.top) *
-                    0.25,
-                child: Chart(
-                  recentTransaction: _recentTransaction,
-                )),
-            Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: 15.0,
-                vertical: 0.0,
-              ),
-              child: Divider(
-                thickness: 2.0,
-                color: Colors.grey[400],
-              ),
-            ),
-            Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.75,
-              child: TransactionList(
-                transactions: _userTransaction,
-                deleteTx: _deleteTransaction,
-              ),
-            ),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              if (isLandscape)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Show chart'),
+                    Switch.adaptive(
+                      value: _showChart,
+                      onChanged: (value) {
+                        setState(
+                          () {
+                            _showChart = value;
+                          },
+                        );
+                      },
+                    )
+                  ],
+                ),
+              if (!isLandscape)
+                Container(
+                    height: (mediaQuery.size.height -
+                            appBar.preferredSize.height -
+                            mediaQuery.padding.top) *
+                        0.25,
+                    child: Chart(
+                      recentTransaction: _recentTransaction,
+                    )),
+              if (!isLandscape)
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 15.0,
+                    vertical: 0.0,
+                  ),
+                  child: Divider(
+                    thickness: 2.0,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              if (!isLandscape) transactionList,
+              if (isLandscape)
+                _showChart
+                    ? Container(
+                        height: (mediaQuery.size.height -
+                                appBar.preferredSize.height -
+                                mediaQuery.padding.top) *
+                            0.75,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 50.0,
+                          vertical: 0.0,
+                        ),
+                        child: Chart(
+                          recentTransaction: _recentTransaction,
+                        ))
+                    : transactionList
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
