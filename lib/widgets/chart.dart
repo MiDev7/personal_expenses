@@ -2,7 +2,6 @@ import 'package:expenses_planner/models/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './chart_bar.dart';
-import '../models/transaction.dart';
 
 class Chart extends StatelessWidget {
   final List<Transaction> recentTransaction;
@@ -40,12 +39,11 @@ class Chart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(groupedTransactionValues);
     return Card(
         elevation: 3,
-        margin: EdgeInsets.all(15),
+        margin: const EdgeInsets.all(15),
         child: Container(
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: groupedTransactionValues.map((tx) {

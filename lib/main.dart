@@ -1,7 +1,5 @@
 import 'package:expenses_planner/widgets/chart.dart';
-
 import './widgets/new_transaction.dart';
-import './widgets/chart.dart';
 import './models/transaction.dart';
 import './widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +15,7 @@ void main() {
       DeviceOrientation.landscapeRight,
     ],
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -65,7 +63,7 @@ class MyApp extends StatelessWidget {
           onTertiaryContainer: Colors.white,
           onSurface: Colors.white,
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           titleTextStyle: TextStyle(
               fontWeight: FontWeight.w600,
               fontFamily: 'Poppins',
@@ -77,7 +75,7 @@ class MyApp extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: Theme.of(context).colorScheme.onTertiaryContainer,
               ),
-              titleLarge: TextStyle(
+              titleLarge: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
               ),
@@ -85,13 +83,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.light,
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key});
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -118,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Transaction> get _recentTransaction {
     return _userTransaction.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(
-        Duration(days: 7),
+        const Duration(days: 7),
       ));
     }).toList();
   }
@@ -154,6 +152,73 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  List<Widget> _buildLandscapeContent(
+    MediaQueryData mediaQuery,
+    AppBar appBar,
+    Widget transactionList,
+  ) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Show chart'),
+          Switch.adaptive(
+            value: _showChart,
+            onChanged: (value) {
+              setState(
+                () {
+                  _showChart = value;
+                },
+              );
+            },
+          )
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.75,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 50.0,
+                vertical: 0.0,
+              ),
+              child: Chart(
+                recentTransaction: _recentTransaction,
+              ))
+          : transactionList
+    ];
+  }
+
+  List<Widget> _builtPortaitContent(
+    MediaQueryData mediaQuery,
+    AppBar appBar,
+    Widget transactionList,
+  ) {
+    return [
+      SizedBox(
+          height: (mediaQuery.size.height -
+                  appBar.preferredSize.height -
+                  mediaQuery.padding.top) *
+              0.25,
+          child: Chart(
+            recentTransaction: _recentTransaction,
+          )),
+      Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: 15.0,
+          vertical: 0.0,
+        ),
+        child: Divider(
+          thickness: 2.0,
+          color: Colors.grey[400],
+        ),
+      ),
+      transactionList
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -165,12 +230,12 @@ class _MyHomePageState extends State<MyHomePage> {
       actions: [
         IconButton(
           onPressed: () => _newTransactionModal(context),
-          icon: Icon(Icons.add),
+          icon: const Icon(Icons.add),
         )
       ],
     );
 
-    final transactionList = Container(
+    final transactionList = SizedBox(
       height: (mediaQuery.size.height -
               appBar.preferredSize.height -
               mediaQuery.padding.top) *
@@ -186,67 +251,18 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (isLandscape)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Show chart'),
-                    Switch.adaptive(
-                      value: _showChart,
-                      onChanged: (value) {
-                        setState(
-                          () {
-                            _showChart = value;
-                          },
-                        );
-                      },
-                    )
-                  ],
-                ),
-              if (!isLandscape)
-                Container(
-                    height: (mediaQuery.size.height -
-                            appBar.preferredSize.height -
-                            mediaQuery.padding.top) *
-                        0.25,
-                    child: Chart(
-                      recentTransaction: _recentTransaction,
-                    )),
-              if (!isLandscape)
-                Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 15.0,
-                    vertical: 0.0,
-                  ),
-                  child: Divider(
-                    thickness: 2.0,
-                    color: Colors.grey[400],
-                  ),
-                ),
-              if (!isLandscape) transactionList,
-              if (isLandscape)
-                _showChart
-                    ? Container(
-                        height: (mediaQuery.size.height -
-                                appBar.preferredSize.height -
-                                mediaQuery.padding.top) *
-                            0.75,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 50.0,
-                          vertical: 0.0,
-                        ),
-                        child: Chart(
-                          recentTransaction: _recentTransaction,
-                        ))
-                    : transactionList
-            ],
-          ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if (isLandscape)
+                  ..._buildLandscapeContent(
+                      mediaQuery, appBar, transactionList),
+                if (!isLandscape)
+                  ..._builtPortaitContent(mediaQuery, appBar, transactionList),
+              ]),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () => _newTransactionModal(context),
       ),
       floatingActionButtonLocation:

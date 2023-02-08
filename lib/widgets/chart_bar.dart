@@ -1,6 +1,3 @@
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-
 import 'package:flutter/material.dart';
 
 class ChartBar extends StatelessWidget {
@@ -21,7 +18,7 @@ class ChartBar extends StatelessWidget {
       builder: (context, constraint) {
         return Column(
           children: [
-            Container(
+            SizedBox(
               height: constraint.maxHeight * 0.15,
               child: FittedBox(
                 child: Text('\$${spendingAmount.toStringAsFixed(0)}'),
@@ -30,7 +27,7 @@ class ChartBar extends StatelessWidget {
             SizedBox(
               height: constraint.maxHeight * 0.05,
             ),
-            Container(
+            SizedBox(
               height: constraint.maxHeight * 0.6,
               width: 20,
               child: Stack(children: [
@@ -54,7 +51,7 @@ class ChartBar extends StatelessWidget {
             SizedBox(
               height: constraint.maxHeight * 0.05,
             ),
-            Container(
+            SizedBox(
               height: constraint.maxHeight * 0.15,
               child: FittedBox(
                 child: Text(label),
